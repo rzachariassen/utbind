@@ -1,0 +1,3 @@
+#!/bin/sh
+kill -9 `cat /etc/named.pid`
+nice --5 /usr/etc/named 

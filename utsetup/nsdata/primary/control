@@ -1,0 +1,69 @@
+;
+; Authoritative data for control (Electrical Engineering)
+;
+;----------------------------------------------------------------------
+control	IN	SOA	odin.control oyoung.odin.control (
+				881121    ; Serial
+				3600      ; Refresh
+				600       ; Retry
+				3600000   ; Expire
+				86400 )   ; Minimum
+		IN	NS	odin.control
+;----------------------------------------------------------------------
+localhost.control	IN	A	127.0.0.1
+loghost.control		IN	A	128.100.9.1
+;----------------------------------------------------------------------
+odin.control	IN	A	128.100.8.161
+		IN	A	128.100.9.1
+		IN	HINFO	SUN-4/260 UNIX
+		IN	WKS	128.100.8.161	TCP smtp telnet
+		IN	WKS	128.100.9.1	TCP smtp telnet
+		IN	MX	0 odin.control
+odin-en.control IN	A	128.100.8.161
+odin-en2.control IN	A	128.100.9.1
+;----------------------------------------------------------------------
+thor.control	IN	A	128.100.9.2
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.2 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+hel.control	IN	A	128.100.9.3
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.3 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+tyr.control	IN	A	128.100.9.4
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.4 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+loki.control	IN	A	128.100.9.5
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.5 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+bragi.control	IN	A	128.100.9.6
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.6 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+baldi.control	IN	A	128.100.9.7
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.7 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+njord.control	IN	A	128.100.9.8
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.8 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+heimdal.control	IN	A	128.100.9.9
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.9 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------
+forsetti.control	IN	A	128.100.9.12
+		IN	HINFO	SUN-3/50 UNIX
+		IN	WKS	128.100.9.12 TCP telnet
+		IN	MX	0 odin.control
+;----------------------------------------------------------------------

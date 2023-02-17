@@ -1,0 +1,4 @@
+#!/bin/sh
+PIDFILE=/etc/named.pid
+/bin/ps wup`cat ${PIDFILE}`
+

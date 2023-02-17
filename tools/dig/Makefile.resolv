@@ -1,0 +1,97 @@
+#
+# Copyright (c) 1988 Regents of the University of California.
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms are permitted
+# provided that this notice is preserved and that due credit is given
+# to the University of California at Berkeley. The name of the University
+# may not be used to endorse or promote products derived from this
+# software without specific prior written permission. This software
+# is provided ``as is'' without express or implied warranty.
+#
+#	from @(#)Makefile	5.16 (Berkeley) 3/14/88
+#
+####
+#### Updated 3/27/89 for 'dig' version 1.0 at University of Southern
+#### California Information Sciences Institute (USC-ISI).
+####
+
+SRCS=	herror.c res_comp.c res_debug.c res_init.c res_mkquery.c res_query.c \
+	res_send.c strcasecmp.c gethostnamadr.c sethostent.c qtime.c
+OBJS=	herror.o res_comp.o res_debug.o res_init.o res_mkquery.o res_query.o \
+	res_send.o strcasecmp.o gethostnamadr.o sethostent.o qtime.o
+DEFS=	-DDEBUG
+CFLAGS=	-g ${DEFS}
+
+dig: libresolv.a dig.c
+	${CC} ${CFLAGS} dig.c -L`pwd` libresolv.a -o dig
+
+libresolv.a: ${OBJS}
+	ar cru libresolv.a ${OBJS}
+	ranlib libresolv.a
+
+.c.o:
+	${CC} ${CFLAGS} -c $*.c
+	-ld -x -r $*.o
+	mv a.out $*.o
+
+dig-local: dig.c
+	${CC} ${CFLAGS} dig.c -DRESLOCAL -lresolv -o dig-local
+
+clean: FRC
+	rm -f *.o errs a.out core tags
+
+depend: FRC
+	mkdep -f Makefile.resolv ${CFLAGS} ${SRCS}
+
+FRC:
+
+# DO NOT DELETE THIS LINE -- mkdep uses it.
+# DO NOT PUT ANYTHING AFTER THIS LINE, IT WILL GO AWAY.
+
+herror.o: herror.c /usr/include/sys/types.h /usr/include/sys/sysmacros.h
+herror.o: /usr/include/sys/uio.h
+res_comp.o: res_comp.c hfiles.h /usr/include/sys/types.h
+res_comp.o: /usr/include/sys/sysmacros.h /usr/include/stdio.h nameser.h
+res_debug.o: res_debug.c hfiles.h /usr/include/sys/types.h
+res_debug.o: /usr/include/sys/sysmacros.h /usr/include/netinet/in.h
+res_debug.o: /usr/include/stdio.h nameser.h resolv.h pflag.h
+res_init.o: res_init.c hfiles.h /usr/include/sys/types.h
+res_init.o: /usr/include/sys/sysmacros.h /usr/include/sys/socket.h
+res_init.o: /usr/include/netinet/in.h /usr/include/stdio.h nameser.h resolv.h
+res_mkquery.o: res_mkquery.c hfiles.h /usr/include/stdio.h
+res_mkquery.o: /usr/include/sys/types.h /usr/include/sys/sysmacros.h
+res_mkquery.o: /usr/include/netinet/in.h nameser.h resolv.h
+res_query.o: res_query.c hfiles.h /usr/include/sys/param.h
+res_query.o: /usr/include/machine/param.h /usr/include/sys/signal.h
+res_query.o: /usr/include/vm/faultcode.h /usr/include/sys/types.h
+res_query.o: /usr/include/sys/sysmacros.h /usr/include/sys/socket.h
+res_query.o: /usr/include/netinet/in.h /usr/include/ctype.h netdb.h
+res_query.o: /usr/include/stdio.h /usr/include/errno.h /usr/include/sys/errno.h
+res_query.o: /usr/include/strings.h /usr/include/arpa/inet.h nameser.h resolv.h
+res_send.o: res_send.c hfiles.h /usr/include/sys/param.h
+res_send.o: /usr/include/machine/param.h /usr/include/sys/signal.h
+res_send.o: /usr/include/vm/faultcode.h /usr/include/sys/types.h
+res_send.o: /usr/include/sys/sysmacros.h /usr/include/sys/socket.h
+res_send.o: /usr/include/sys/uio.h /usr/include/netinet/in.h
+res_send.o: /usr/include/stdio.h /usr/include/errno.h /usr/include/sys/errno.h
+res_send.o: nameser.h resolv.h qtime.h /usr/include/stdio.h
+res_send.o: /usr/include/sys/time.h /usr/include/time.h
+res_send.o: /usr/include/sys/types.h pflag.h
+strcasecmp.o: strcasecmp.c
+gethostnamadr.o: gethostnamadr.c hfiles.h /usr/include/sys/param.h
+gethostnamadr.o: /usr/include/machine/param.h /usr/include/sys/signal.h
+gethostnamadr.o: /usr/include/vm/faultcode.h /usr/include/sys/types.h
+gethostnamadr.o: /usr/include/sys/sysmacros.h /usr/include/sys/socket.h
+gethostnamadr.o: /usr/include/netinet/in.h /usr/include/ctype.h netdb.h
+gethostnamadr.o: /usr/include/stdio.h /usr/include/errno.h
+gethostnamadr.o: /usr/include/sys/errno.h /usr/include/arpa/inet.h nameser.h
+gethostnamadr.o: resolv.h
+sethostent.o: sethostent.c hfiles.h /usr/include/sys/types.h
+sethostent.o: /usr/include/sys/sysmacros.h nameser.h /usr/include/netinet/in.h
+sethostent.o: resolv.h
+qtime.o: qtime.c qtime.h /usr/include/stdio.h /usr/include/sys/time.h
+qtime.o: /usr/include/time.h /usr/include/sys/types.h
+qtime.o: /usr/include/sys/sysmacros.h
+
+# IF YOU PUT ANYTHING HERE IT WILL GO AWAY

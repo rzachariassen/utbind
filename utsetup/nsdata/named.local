@@ -1,0 +1,8 @@
+@	IN	SOA	control.utoronto.ca. oyoung.control.utoronto.ca. (
+					1.0     ; Serial
+					3600    ; Refresh
+					300     ; Retry
+					3600000 ; Expire
+					3600 )  ; Minimum
+		IN	NS	odin.control.utoronto.ca.
+1		IN	PTR	localhost.

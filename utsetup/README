@@ -1,0 +1,105 @@
+This is a guide to help you with bind.
+
+Some references which can be obtain by anonymous ftp to neat.cs (in /rfc):
+
+(RFC1035) Nov 87    (Mockapetris) Domain Names - Implementations
+(RFC1034) Nov 87    (Mockapetris) Domain Names - Concepts and ...
+(RFC1033) Nov 87    (Lottor)      Domain Administrators Operations
+(RFC1032) Nov 87    (Stahl)       Domain Administrators Guide
+(RFC1031) Nov 87    (Lazear)      Milnet Name Domain Transition
+(RFC974)  Jan 86    (Partridge)   Mail Routing and the Domain System  
+(RFC973)  Jan 86    (Mockapetris) Domain System Changes and ...
+(RFC921)  Oct 84    (Postel)      Domain Name System Implementation 
+(RFC920)  Oct 84    (Postel)      Domain Requirements
+(RFC897)  Feb 84    (Postel)      Domain Name System Implementation 
+(RFC883)  Nov 83    (Mockapetris) Domain Names - Implementation 
+(RFC882)  Nov 83    (Mockapetris) Domain Names - Concepts and ...
+(RFC881)  Nov 83    (Postel)      The Domain Names Plan and Schedule
+(RFC819)  Aug 82    (Su)          The Domain Naming Convention for ...
+(RFC799)  Sep 81    (Mills)       Internet Name Domains
+
+
+If you are maintaining name server data, you should at least read these:
+
+	A) RFC1033
+	B) "Name Server Operations Guide for BIND" by Kevin Dunlap. This
+		can be found in the 4.3BSD manual under section SMM11. A
+		version of this can be found in the SunOS 4.0 manual.
+	C) manual pages for bind. See man/*
+		
+
+The rest of this file will show ONE way of setting up the data at UofT for a
+subdomain of the toronto.edu and utoronto.ca domains.  The example shown is
+for the "control" subdomain.
+
+
+1.	Install the UofT BIND. Current version is 4.8.2+. This version
+	has many bug fixes made and has a separate program for zone transfer
+	(used by secondary servers) and negative caching.
+
+2.	Pick the domain that you would like to be in and edit the
+	/etc/resolv.conf file.  For an example, see resolv.conf in this
+	directory.  The domain is control.utoronto.ca and the nameserver
+	is odin.control.utoronto.ca whose address is 128.100.9.1.
+	If you change your hostname, please notify whomever maintains the
+	reverse address lookup data for your ethernet so that data can be
+	updated.  If you change the name of your subdomain or want to add
+	a new one, please notify hostmaster@cs so that the rest of UofT
+	will know about it.
+
+3.	Now create /etc/nsdata and copy the files in nsdata to it.  Edit
+	them as appropriate for your nameserver.  The reading list will be
+	very useful for making sense of the information in the nsdata
+	directory.  The files and directories are:
+
+	bin		directory containing some scripts that one may use
+			with the nameserver.  They may depend on where and
+			what you call the binary for name server. 
+
+	domain		directory containing files defining the subdomains
+			for which you are a primary nameserver.  Once these
+			files are set up, they should not have to be touched
+			for a while.  The real data for these subdomains is
+			kept in the "primary" directory.  In this example,
+			there are two files: "control.toronto.edu" and
+			"control.utoronto.ca".  They both include the
+			"secondaries" file and the common data kept in the
+			"primary" directory.  However, in one case the origin
+			is "toronto.edu.", in the other it is "utoronto.ca".
+
+	named.boot	file containing nameserver configuration.  This file
+			is specific to your machine and setup.  Edit the example
+			file as appropriate.  Comment lines start with a ';'.
+
+	named.ca	file allows your nameserver to orient itself in
+			the world.  You should not touch it by yourself.
+
+	named.local	file defines the loopback address on your machine.
+			Use it as a guide and edit the SOA and NS lines
+			appropriately depending on your domain and hostname.
+			You will then never need to touch this file again.
+
+	primary		directory containing data for which your nameserver
+			is a primary server.
+
+	ptrprimary	directory containing the address to name mapping data
+			for which your nameserver is a primary server.  Note
+			that in this example, there is a
+
+				$INCLUDE secondaries utoronto.ca.
+
+			line.  If your primary domain is toronto.edu then you
+			should change that line accordingly.
+
+	secondaries	file containing the names of the machines that are
+			secondaries for all University of Toronto machines.
+			You should not touch it by yourself.
+
+
+If any of the common configuration files change (named.ca, secondaries),
+you will be notified via the hosts-dist mailing list.
+
+
+Dennis Ferguson <dennis@gw.ccie>
+Johnny Chee-Wah <johncw@gpu.utcs>
+Rayan Zachariassen <rayan@cs>

@@ -1,0 +1,210 @@
+How to use T_MP facility:
+
+The code expects to be able to look up stuff in an ndbm format database
+created from the output of pathalias (note that the normal pathalias makedb
+program creates dbm format databases).  Given a host/domain name you want
+to route to, you look up name.magic-subdomain.your-domain.  For example,
+here magic-subdomain.your-domain is world.toronto.edu.  So you would be
+asking for T_MP information on uunet.world.toronto.edu.  The nameserver may
+have resource records already stored for this domain, or if not it must go
+to the database to look up a route.  The pathalias output is uucp-style
+route syntax (!-separated links), which is transformed into near-RFC822
+syntax information internally in the nameserver before use.  Anything fetched
+from the database will subsequently be known to the nameserver without
+referring to the database.  If you want to override information in the
+database, you just specify it in the definition of the magic-subdomain.
+
+The intent with all this is to be able to override global Internet routing
+information in an efficient and consistent way.  The idea is to avoid sending
+to some site across the continent through official channels, if you happen to
+have some cheaper/faster direct way of getting to them.  This aspect involves
+use of MX records, and indeed for a proper setup you need to mirror the MP
+and MX "seed records" for all domains (see below).  The mailer should use the
+following sequence of lookups to route a host:
+
+1. MX lookup for name.magic-subdomain.your-domain.
+2. MX lookup for name.
+3. MP lookup for name.magic-subdomain.your-domain.
+
+#1 provides a way of overriding global MX information, #2 uses global
+information if there is no local override, #3 is a fall-back for hosts/domains
+without MX information.  Of course, the mailer is free to make routing
+decisions prior to going through this sequence, which is typically what
+happens at gateways.  However internal hosts will direct the message at
+an appropriate gateway machine.
+
+The data type for the MP record is a string; if the string consist of the
+single word "pathalias" then the actual value will be found by lookup in
+the database.  In the named.boot file you need to specify the location of
+the database, which is done using the 'nspath' keyword.  We added the following
+three lines to the named.boot file on one of our servers:
+
+primary		world.toronto.edu	world
+primary		world.utoronto.ca	world
+nspath	/csri4/path/maps/library/uunetDB	/csri4/path/maps/library/localDB
+
+
+Note that 'nspath' takes two arguments; the latter is optional and probably
+is not relevant to your situation.  More generally just use
+
+nspath		/path/to/ndbm/format/pathalias/database/stem/name
+
+For example we use /.../uunetDB because that's the ndbm name for it, in reality
+there are .../uunetDB.dir and .../uunetDB.pag files.
+
+The minimum contents of the file "world" might look something like this:
+
+;
+; Pathalias database subdomain (WORLD)
+;
+;----------------------------------------------------------------------
+@	IN	SOA	spadina.csri.toronto.edu. rayan.ai.toronto.edu. (
+					2.2       ; Serial
+					3600      ; Refresh
+					300       ; Retry
+					3600000   ; Expire
+					3600 )    ; Minimum
+		IN	NS	spadina.csri.toronto.edu.
+;----------------------------------------------------------------------
+*		IN	MP	pathalias
+
+In reality it is a bit more complicated, at least here:
+
+;
+; Pathalias database subdomain (WORLD)
+;
+;----------------------------------------------------------------------
+@	IN	SOA	spadina.csri.toronto.edu. rayan.ai.toronto.edu. (
+					2.2       ; Serial
+					3600      ; Refresh
+					300       ; Retry
+					3600000   ; Expire
+					3600 )    ; Minimum
+		IN	NS	spadina.csri.toronto.edu.
+		IN	NS	gpu.utcs.toronto.edu.
+;----------------------------------------------------------------------
+*		IN	MP	pathalias
+; temporary entries till the database gets fixed up
+utcseri		IN	MP	@eri.toronto.edu
+atina		IN	MP	@ai.toronto.edu
+mcgill-vision	IN	MP	@larry.mcrcim.mcgill.edu
+itrchq		IN	MP	@yonge.csri.toronto.edu
+*.ca		IN	MP	pathalias
+*.*.ca		IN	MP	pathalias
+*.*.*.ca	IN	MP	pathalias
+*.*.*.*.ca	IN	MP	pathalias
+hsa		IN	MP	@turing.toronto.edu
+yunexus		IN	MP	@neat.ai.toronto.edu
+;*		IN	MP	"uupath -f $U -sr $N </dev/null"
+;*.lsuc		IN	MP	"uupath -f $U -s -@ $N"
+;--------
+;*.arpa		IN	MX	50	neat.ai.toronto.edu.
+;*.au		IN	MX	50	neat.ai.toronto.edu.
+*.bitnet	IN	MX	50	gpu.utcs.toronto.edu.
+*.carleton.ca	IN	MX	50	neat.ai.toronto.edu.
+*.cdn		IN	MX	50	neat.ai.toronto.edu.
+*.cern		IN	MX	50	gpu.utcs.toronto.edu.
+;*.ch		IN	MX	50	neat.ai.toronto.edu.
+*.chunet	IN	MX	50	neat.ai.toronto.edu.
+*.cmc.ca	IN	MX	50	neat.ai.toronto.edu.
+*.concordia.ca	IN	MX	50	neat.ai.toronto.edu.
+*.csnet		IN	MX	50	relay.cs.net.
+;*.de		IN	MX	50	gpu.utcs.toronto.edu.
+;*.de		IN	MX	100	neat.ai.toronto.edu.
+*.dfn		IN	MX	50	neat.ai.toronto.edu.
+*.dunet		IN	MX	50	neat.ai.toronto.edu.
+*.earn		IN	MX	50	gpu.utcs.toronto.edu.
+*.earn		IN	MX	100	neat.ai.toronto.edu.
+;*.fi		IN	MX	50	gpu.utcs.toronto.edu.
+;*.fr		IN	MX	50	neat.ai.toronto.edu.
+*.funet		IN	MX	50	neat.ai.toronto.edu.
+*.guelph	IN	MX	50	gpu.utcs.toronto.edu.
+*.hepnet	IN	MX	50	gpu.utcs.toronto.edu.
+*.hsa.com	IN	MX	50	turing.toronto.edu.
+;*.ie		IN	MX	50	gpu.utcs.toronto.edu.
+*.infnet	IN	MX	50	gpu.utcs.toronto.edu.
+*.iris		IN	MX	50	neat.ai.toronto.edu.
+*.irl		IN	MX	50	neat.ai.toronto.edu.
+*.isanet	IN	MX	50	neat.ai.toronto.edu.
+*.jpn		IN	MX	50	neat.ai.toronto.edu.
+*.junet		IN	MX	50	neat.ai.toronto.edu.
+;*.kr		IN	MX	50	neat.ai.toronto.edu.
+*.mfenet	IN	MX	50	gpu.utcs.toronto.edu.
+*.mlnet		IN	MX	50	julian.uwo.ca.
+*.mun.edu	IN	MX	50	neat.ai.toronto.edu.
+*.mun.edu	IN	MX	50	neat.ai.toronto.edu
+*.netnorth	IN	MX	50	gpu.utcs.toronto.edu.
+*.osiride	IN	MX	50	neat.ai.toronto.edu.
+*.sfu.ca	IN	MX	50	neat.ai.toronto.edu.
+*.sq.com	IN	MX	50	neat.ai.toronto.edu.
+*.sunet		IN	MX	50	neat.ai.toronto.edu.
+*.surfnet	IN	MX	50	neat.ai.toronto.edu.
+*.to.cnr.it	IN	MX	50	gpu.utcs.toronto.edu.
+*.ubc.ca	IN	MX	50	neat.ai.toronto.edu.
+*.uchicago	IN	MX	50	gpu.utcs.toronto.edu.
+*.unicus.com	IN	MX	50	yonge.csri.toronto.edu.
+*.uninett	IN	MX	50	neat.ai.toronto.edu.
+*.utoronto	IN	MX	50	gpu.utcs.toronto.edu.
+*.uwaterloo.ca	IN	MX	50	watmath.uwaterloo.ca.
+*.uwo.cdn	IN	MX	50	julian.uwo.ca.
+*.waterloo.edu	IN	MX	50	watmath.waterloo.edu.
+*.weslyn	IN	MX	50	gpu.utcs.toronto.edu.
+*.wustl		IN	MX	50	gpu.utcs.toronto.edu.
+; miscellany
+hsa.com		IN	MX	50	turing.toronto.edu.
+mun.edu		IN	MX	50	neat.ai.toronto.edu.
+sq.com		IN	MX	50	neat.ai.toronto.edu.
+unicus.com	IN	MX	50	yonge.csri.toronto.edu.
+;
+;*.arpa		IN	MP	pathalias
+;*.au		IN	MP	pathalias
+*.bitnet	IN	MP	pathalias
+*.carleton.ca	IN	MP	pathalias
+*.cdn		IN	MP	pathalias
+*.cern		IN	MP	pathalias
+;*.ch		IN	MP	pathalias
+*.chunet	IN	MP	pathalias
+*.cmc.ca	IN	MP	pathalias
+*.concordia.ca	IN	MP	pathalias
+*.csnet		IN	MP	pathalias
+;*.de		IN	MP	pathalias
+;*.de		IN	MP	pathalias
+*.dfn		IN	MP	pathalias
+*.dunet		IN	MP	pathalias
+*.earn		IN	MP	pathalias
+*.earn		IN	MP	pathalias
+;*.fi		IN	MP	pathalias
+;*.fr		IN	MP	pathalias
+*.funet		IN	MP	pathalias
+*.guelph	IN	MP	pathalias
+*.hepnet	IN	MP	pathalias
+*.hsa.com	IN	MP	pathalias
+;*.ie		IN	MP	pathalias
+*.infnet	IN	MP	pathalias
+*.iris		IN	MP	pathalias
+*.irl		IN	MP	pathalias
+*.isanet	IN	MP	pathalias
+*.jpn		IN	MP	pathalias
+*.junet		IN	MP	pathalias
+;*.kr		IN	MP	pathalias
+*.mfenet	IN	MP	pathalias
+*.mlnet		IN	MP	pathalias
+*.mun.edu	IN	MP	pathalias
+*.mun.edu	IN	MP	pathalias
+*.netnorth	IN	MP	pathalias
+*.osiride	IN	MP	pathalias
+*.sfu.ca	IN	MP	pathalias
+*.sq.com	IN	MP	pathalias
+*.sunet		IN	MP	pathalias
+*.surfnet	IN	MP	pathalias
+*.to.cnr.it	IN	MP	pathalias
+*.ubc.ca	IN	MP	pathalias
+*.uchicago	IN	MP	pathalias
+*.unicus.com	IN	MP	pathalias
+*.uninett	IN	MP	pathalias
+*.utoronto	IN	MP	pathalias
+*.uwo.cdn	IN	MP	pathalias
+*.weslyn	IN	MP	pathalias
+*.wustl		IN	MP	pathalias
+*.uwaterloo.ca	IN	MP	pathalias
+*.waterloo.edu	IN	MP	pathalias

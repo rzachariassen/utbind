@@ -1,0 +1,374 @@
+.\"
+.\" Distributed with 'dig' version 1.0 from University of Southern
+.\" California Information Sciences Institute (USC-ISI).
+.\"
+.\"       dig.1   1.0 (USC-ISI) 4/15/89
+.\"
+.TH DIG 1 "April 15, 1989"
+.SH NAME
+dig \- send domain name query packets to name servers
+.SH SYNOPSIS
+.IP "dig domain"
+.ns
+.IP "    [@<server>]"
+.ns
+.IP "    [<domain query type>]"
+.ns
+.IP "    [<domain query class>]"
+.ns
+.IP "    [+<query parameter>]"
+.ns
+.IP "    [-<dig parameter>]"
+.ns
+.IP "    [%comment-ignored]"
+.sp 1
+.SH DESCRIPTION
+The Domain Name System, currently used by a majority of the
+Internet's component networks, is a large and complex
+autonomously administrated distributed database which provides
+a network wide name service. It's size and the autonomously 
+administered nature of the system make it an ideal breeding
+ground for misconfiguration and other problems.
+.sp 1
+Dig (domain information groper) is a flexible command line tool 
+which can be used to gather information from the Domain
+Name System servers. Dig has two modes: simple interactive mode
+which makes a single query, and batch which produces a query for
+a list of several queries. All query options are accessible from
+the command line.
+.sp 1
+The usual simple use of 'dig' will take the form:
+.sp 1
+	dig @server_name domain_name dns_type dns_class
+.sp 1
+where:
+.sp 1
+Server_name - may be either a domain name or a dot-notation
+Internet address. If this optional field is omitted, 'dig'
+will attempt to use the default name server for your machine.
+.sp 1
+ NOTE: If a domain name is specified, this will be resolved
+ using the domain name system resolver (i.e. bind). If your
+ system does not support DNS,  you may *have* to specify a
+ dot-notation address.  Alternatively, if there is a server
+ at your disposal somewhere,  all that is required is that
+ /etc/resolv.conf be present and indicate where the default
+ name servers  reside,  so that  server_name itself can be
+ resolved. See man resolver(5) for /etc/resolv.conf infor-
+ mation.  (WARNING: Changing /etc/resolv.conf will affect
+ the standard  resolver library and  potentially several
+ programs which use it.) As an option, the user may set the
+ environment variable LOCALRES to name a file which is to
+ be used instead of /etc/resolv.conf (LOCALRES is specific
+ to the 'dig' resolver and  not referenced by the standard
+ resolver). If the LOCALRES variable is not set or the file
+ is not readable then /etc/resolv.conf will be used.
+.sp 2
+Domain_name - is the domain for which you are requesting
+information.
+.sp 2
+Dns_type - is the type of information (DNS query type) that
+you are requesting. If omitted, the default is "a" (T_A = address).
+.IP "	a       T_A     network address"
+.ns
+.IP "	any     T_ANY   all/any information about specified domain"
+.ns
+.IP "	mx      T_MX    mail exchanger for the domain"
+.ns
+.IP "	ns      T_NS    name servers"
+.ns
+.IP "	soa     T_SOA   zone of authority record"
+.ns
+.IP "	hinfo   T_HINFO host information"
+.ns
+.IP "	txt     T_TXT   arbitrary number of strings"
+.ns
+.IP "                     (not yet supported by bind)"
+.ns
+.IP "	..."
+.ns
+.IP "             (see RFC 1035 for complete list)"
+.sp 1
+.PP
+Dns_class - is the network class requested in the query. If
+omitted, the default is "in" (C_IN = Internet).
+.IP "	in      C_IN    Internet class domain"
+.ns
+.IP "	any     C_ANY   all/any class information"
+.ns
+.IP "	..."
+.ns
+.IP "	        (see RFC 1035 for complete list)"
+.sp 1
+NOTE:
+  "Any" can be used to specify a class and/or a type of
+   query. Dig will parse the first occurrence of "any"
+   to mean query_type = T_ANY. To specify query_class =
+   C_ANY you must either specify "any" twice, or set
+   query_class using "-c" option (see below).
+.sp 1
+.SH OTHER OPTIONS
+%ignored-comment
+   "%" is used to included an argument that is simply not
+   parsed.  This may be useful  if running 'dig' in batch
+   mode. Instead of resolving every @server-domain-name in
+   a list of queries, you can avoid the overhead of doing
+   so, and still have the domain name on the command line
+   as a reference. Example:
+.sp 1
+	dig @128.9.0.32 %venera.isi.edu mx isi.edu
+.sp 2
+-<dig option>
+   "-" is used to specify an option which effects the
+   operation of dig. The following options are currently
+   available (although not guaranteed to be useful):
+.sp 1
+   -f XXX  File for dig batch mode. File XXX contains a list
+           of query specifications (dig command lines) which
+           are to be executed successively. Lines beginning
+           with ';', '#', or '\\n' are ignored. Other options
+           may still appear on command line, and will be in
+           effect for each batch query.
+.sp 1
+   -T XXX  Time in seconds between start of successive
+           queries when running in batch mode. Can be used
+           to keep two or more batch dig commands running
+           roughly in sync. Default is zero.
+.sp 1
+   -p XXX  Port number. Query a name server listening to a
+           non-standard port number.
+.sp 1
+   -P["ping string"]
+           After query returns, execute a ping(8) command
+           for response time comparison. This rather
+           unelegantly makes a call to the shell. The last
+           three lines of statistics is printed for the
+           command:
+.sp 1
+			ping -s server_name 56 3
+.sp 1
+           If the optional "ping string" is present, it
+           replaces "ping -s" in the shell command. A
+           server must be specified on the command line.
+.sp 1
+   -t XXX  Specify type of query. May specify either an
+           integer value to be included in the type field
+           or use the abbreviated mnemonic as discussed
+           above (i.e. mx  = T_MX).
+.sp 1
+   -c XXX  Specify class of query. May specify either an
+           integer value to be included in the class field
+           or use the abbreviated mnemonic as discussed
+           above (i.e. in = C_IN).
+.sp 1
+   -envsav This flag specifies that the environment after
+           all of the arguments are parsed should be saved
+           to a file to become the default environment.
+           Useful if you do not like the standard set of
+           defaults and do not desire to include such a
+           large number of options each time 'dig' is used.
+           The environment consists of resolver state
+           variable flags, timeout, retries as well as
+           the flags detailing 'dig' output (see below).
+           If the environment variable LOCALDEF is set
+           to the name of a file, this is where the default
+           environment is saved. If not, the file "DiG.env"
+           is created in the current working directory.
+.sp 1
+           NOTE: LOCALDEF is specific to the 'dig' resolver,
+           and will not affect operation of the standard
+           resolver library.
+.sp 1
+           Each time 'dig' is executed, a check is made
+           for LOCALDEF. If it is defined and the file
+           is readable, then the environment is restored
+           before any arguments are parsed.
+.sp 1
+   -[no]stick
+           This flag is only useful in batch queries.
+           It indicates  whether (or not)  to restore the
+           default environment (see -envsav) before parsing
+           and sending each query. The default environment
+           is  either the  standard defaults, those  from
+           LOCALDEF,  or those  set by  "-envset".
+           The default is "-nostick".
+.sp 1
+   -envset This flag in conjunction with "-stick" may be
+           useful for batch query runs. When "-envset" is
+           specified, the environment after the arguments
+           are parsed becomes the default environment for
+           the duration of the batch file.
+.sp 2
++<query option>
+   "+" is used to specify an option to be changed in the
+   query packet or to change 'dig' output specifics. Many
+   of these are the same parameters accepted by 'nslookup'.
+   If an option requires a parameter, the form is as
+   follows:
+.sp 1
+	         +keyword[=value]
+.sp 1
+   Most keywords can be abbreviated.  Parsing of the "+"
+   options  is very  simplistic  --  A value must not be
+   separated from its keyword by white space. The following
+   keywords are currently available:
+.sp 1
+.IP "      Valid keywords:      Meaning:"
+.IP "      (abbreviation)      [default]"
+.IP "      ---------------     ---------"
+.sp 1
+.IP "      [no]debug (deb)    turn on/off debugging mode [deb]"
+.ns
+.IP "      [no]d2             turn on/off extra debugging mode [nod2]"
+.ns
+.IP "      [no]recurse (rec)  use/don't use recursive lookup [rec]"
+.ns
+.IP "      retry=#  (ret)     set number of retries to # [4]"
+.ns
+.IP "      time=#   (ti)      set timeout length to # seconds [4]"
+.ns
+.IP "      [no]ko             keep open option (implies vc) [noko]"
+.ns
+.IP "      [no]vc             use/don't use virtual circuit [novc]"
+.ns
+.IP "      [no]defname (def)  use/don't use default domain name [def]"
+.ns
+.IP "      [no]search  (sea)  use/don't use domain search list [sea]"
+.ns
+.IP "      domain=NAME (do)   set default domain name to NAME"
+.ns
+.IP "      [no]ignore  (i)    ignore/don't ignore trunc. errors [noi]"
+.ns
+.IP "      [no]primary (pr)   use/don't use primary server [nopr]"
+.ns
+.IP "      [no]aaonly  (aa)   authoritative query only flag [noaa]"
+.ns
+.IP "      [no]sort    (sor)  sort resource records [nosor]"
+.ns
+.IP "      [no]cmd            echo parsed arguments [cmd]"
+.ns
+.IP "      [no]stats   (st)   print query statistics (RTT,etc) [st]"
+.ns
+.IP "      [no]qr             print outgoing query [noqr]"
+.ns
+.IP "      [no]reply   (rep)  print reply [rep]"
+.ns
+.IP "      [no]header  (he)   print certain parts of header [he]"
+.ns
+.IP "      [no]Header  (H)    print all/any of header [H]"
+.ns
+.IP "      [no]ttlid   (tt)   print TTLs and pkt ID's [tt]"
+.ns
+.IP "      [no]ques    (qu)   print question section [qu]"
+.ns
+.IP "      [no]answer  (an)   print answer section [an]"
+.ns
+.IP "      [no]author  (au)   print authoritative section [au]"
+.ns
+.IP "      [no]addit   (ad)   print additional section [ad]"
+.ns
+.IP "      pfdef              set to default print flags"
+.ns
+.IP "      pfmin              set to minimal default print flags"
+.ns
+.IP "      pfset=#            set print flags to #"
+.ns
+.IP "      pfand=#            bitwise and print flags with #"
+.ns
+.IP "      pfor=#             bitwise or print flags with #"
+.sp 2
+retry/time -- the retransmission strategy used by resolver library
+when sending datagram queries is as follows. (Note: the number of 
+servers and/or addresses is always one when using 'dig').
+.IP "	   for i = 0 to retry-1"
+.ns
+.IP "	       for j = 1 to num_servers"
+.ns
+.IP "	         send_query"
+.ns
+.IP "	         wait((time * (2**i)) / num_servers)"
+.ns
+.IP "	        rof"
+.ns
+.IP "	   rof"
+.sp 1
+pfset/pfand/pfor - these were included to make manipulation of
+the various print options less tedious. The currently defined
+values are:
+.IP "	    PRF_STATS    0x0001    RTT, query host, server host info"
+.ns
+.IP "	    PRF_CMD      0x0008    dig command line echo"
+.ns
+.IP "	    PRF_QUES     0x0010    questions section"
+.ns
+.IP "	    PRF_ANS      0x0020    answers section"
+.ns
+.IP "	    PRF_AUTH     0x0040    authoritative section"
+.ns
+.IP "	    PRF_ADD      0x0080    additional records section"
+.ns
+.IP "	    PRF_HEAD2    0x0200    header flags, section RR counts"
+.ns
+.IP "	    PRF_TTLID    0x0400    ttl and packet id number"
+.ns
+.IP "	    PRF_HEADX    0x0700    any/all packet header info"
+.ns
+.IP "	    PRF_QUERY    0x1000    outgoing query packet info"
+.ns
+.IP "	    PRF_REPLY    0x2000    reply packet info"
+.ns
+.IP "	    PRF_SORT     0x8000    sort various response sections"
+.ns
+.IP "	    PRF_DEF      0x27f9    default dig settings"
+.ns
+.IP "	    PRF_MIN      0xa133    minimalistic dig settings for"
+.ns
+.IP "	                           (future) automated server testing"
+.sp 1
+When setting the print options, if you want to see information other
+than statistics, you should choose to examine the outgoing (0x1000), 
+incoming (0x2000), or both packets plus the specific sections of the packet
+you are interested in.
+.sp 1
+.SH DETAILS
+Dig requires a slightly modified version of the bind resolver(3)
+library to gather count and time statistics. Otherwise, it is
+straight-forward (albeit not pretty) effort of parsing arguments
+and setting appropriate parameters. Dig uses resolver routines
+res_init(), res_mkquery(), res_send() as well as accessing _res
+structure. Compiling 'dig' with the standard resolver library
+is possible, but will change the output format, make the print
+options meaningless, and not gather RTT and packet count stats.
+.sp 1
+.SH FILES
+.IP "o /etc/resolv.conf \- initial domain name and"
+.ns
+.IP "  name server addresses"
+.ns
+.IP "o environment var LOCALRES names file to use in place of
+.ns
+.IP "  /etc/resolv.conf"
+.ns
+.IP "o environment var LOCALDEF names default environment file"
+.SH AUTHOR
+Steve Hotz 
+hotz@isi.edu
+.sp 1
+.SH ACKNOWLEDGEMENTS
+Dig uses functions from nslookup(1) authored by Andrew Cherenson;
+taken from Berkeley bind 4.8 distribution. The resolver library
+is primarily from the Berkeley 4.8 bind distribution.
+.sp 1
+.SH BUGS
+When running 'dig' in batch mode, if an error occurs in one of the
+resolver routines 'dig' exits. The preferred behavior would be to
+give up only for that particular query and continue with the
+query list. The fix involves modifying the resolver routines to
+return a status indicating error, rather than simply exiting.
+.sp 1
+The ping option simply makes a system() call to the shell.
+This should be replaced with internal ping code.
+.sp 1
+.SH SEE ALSO
+.sp 1
+named(8)  resolver(3)  resolver(5)  nslookup(1)

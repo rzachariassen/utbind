@@ -1,0 +1,28 @@
+
+#
+# Distributed with 'dig' version 1.0 from University of Southern
+# California Information Sciences Institute (USC-ISI). 3/27/89
+#
+
+; This is a simple sample batch query file.
+; It asks every root server for it's SOA record. This file originally
+; was used to make comparisons between servers with multiple
+; address; thus the several queries of each server.
+; Note use of "%-comments" so that output will be more readily
+; understood. Further, to test the different addresses of the
+; servers, the dot-notation addresses had to be used explicitly.
+
+
+. SOA @128.9.0.107   %A.ISI.EDU
+. SOA @26.3.0.103    %a.isi.edu
+. SOA @128.20.1.2    %brl-aos.arpa
+. SOA @192.5.25.82   %brl-aos.arpa
+. SOA @192.33.4.12   %c.nyser.net
+. SOA @26.1.0.13     %GUNTER-ADAM.ARPA
+. SOA @128.102.16.10   %ns.nasa.gov
+. SOA @10.0.0.51     %SRI-NIC.ARPA
+. SOA @26.0.0.73     %sri-nic.arpa
+. SOA @10.1.0.17      %terp.umd.edu
+. SOA @128.116.6.1    %TERP.UMD.EDU
+. SOA @128.8.10.90    %terp.umd.edu
+. SOA @192.41.177.90  %TERP.UMD.EDU

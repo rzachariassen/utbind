@@ -1,0 +1,14 @@
+#!/bin/sh
+PIDFILE=/etc/named.pid
+if [ $# -gt 0 ]; then
+	count=$1
+	while [ $count -gt 0 ]; do
+		kill -USR1 `cat ${PIDFILE}`
+		echo -n "."
+		sleep 1
+		count=`expr $count - 1`
+	done
+	echo " done."
+else
+	kill -USR1 `cat ${PIDFILE}`
+fi

@@ -1,0 +1,5 @@
+alias nssync 'kill -HUP `cat /etc/named.pid`'
+alias nskill 'kill -9 `cat /etc/named.pid`'
+alias nsdump 'kill -INT `cat /etc/named.pid`'
+alias nsdebuginc 'kill -USR1 `cat /etc/named.pid`'
+alias nsdebugoff 'kill -USR2 `cat /etc/named.pid`'

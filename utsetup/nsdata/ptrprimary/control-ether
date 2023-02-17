@@ -1,0 +1,27 @@
+; U of T systems and control group
+; --- control-ether ---------------------------
+;
+;
+$ORIGIN			9.100.128.in-addr.arpa.
+;
+@	IN	SOA	odin.control.utoronto.ca. root.control.utoronto.ca. (
+				881121  ; Serial
+				3600    ; Refresh every hour
+				600     ; Retry every 10 minutes
+				604800  ; Expire after a week
+				86400 ) ; Minimum of a day
+		IN	NS	odin.control.utoronto.ca.
+$INCLUDE secondaries utoronto.ca.
+;-------------------------------------------------------------------
+1		IN	PTR	odin.control.utoronto.ca.
+2		IN	PTR	thor.control.utoronto.ca.
+3		IN	PTR	hel.control.utoronto.ca.
+4		IN	PTR	tyr.control.utoronto.ca.
+5		IN	PTR	loki.control.utoronto.ca.
+6		IN	PTR	bragi.control.utoronto.ca.
+7		IN	PTR	baldi.control.utoronto.ca.
+8		IN	PTR	njord.control.utoronto.ca.
+9		IN	PTR	heimdal.control.utoronto.ca.
+10		IN	PTR	frey.control.utoronto.ca.
+11		IN	PTR	ganesh.control.utoronto.ca.
+12		IN	PTR	forsetti.control.utoronto.ca.

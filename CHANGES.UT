@@ -1,0 +1,354 @@
+
+		University of Toronto changes to 4.8.2 BIND
+
+Named + Resolver:
+
+- Bugfixes.
+
+- Added T_MP code, intended for pathalias database lookup in the nameserver.
+  To disable, comment out the T_MP define in <arpa/nameser.h>.
+  See doc/MailPath for documentation.
+
+Resolver:
+
+- The /etc/resolv.conf file will take multiple 'domain' directives.  The
+  first will act as previously, any subsequent default domains will be
+  appended to the res.dnsrch array without being expanded.
+
+- Time printout improved.
+
+Bootfile:
+
+- The "xfer" directive names the named-xfer program to use.  This is mostly
+  of interest to binary-only sites.
+
+- The "include" directive names a file that contain other named.boot directives
+  that should be read in at that point.  It is not a fatal error if the file
+  specified isn't accessible.  One can use this recursively to the limit of
+  available file descriptors.
+
+- The "nserror" directive takes two arguments:  the source address to use for
+  connected sockets, and the number of error-receiving sockets to maintain.
+  The source address argument is usually the address of your primary interface,
+  it must be listed like this due to bugs in various kernels.  See below.
+
+- The "tcplist" directive takes a list of IP network numbers as argument,
+  namely those from which TCP connections should be allowed.  Such things
+  are mostly good for zone transfers, so if you want prying eyes from being
+  able to walk all your hosts this is the thing to use.  Apologies to MKL.
+  This code is due to Paul Vixie.
+
+Negative Caching (by Rayan Zachariassen):
+
+- Always enabled.
+
+- Authoritative NXDOMAINs are cached with a TTL of the MINIMUM TTL listed in
+  the SOA RR that is returned in the authority section of the query response.
+  Nonauthoritative NXDOMAINs are ignored except when they are from a forwarder.
+  Responses based on the cache information are nonauthoritative and do not
+  include the SOA.  Note that old versions of BIND used to erroneously produce
+  non-authoritative NXDOMAINs, so applications guarding against this behaviour
+  may have to be changed.
+
+- NOERROR 0 answercount responses to a query (what I call NXRR) are cached.
+  The TTL is min_cache_ttl (5 minutes) if no other RRs exist for that name,
+  and is the minimum TTL of all RRs if any exist.  If the TTL was originally
+  min_cache_ttl then any arriving RR information within the timeout will
+  update the TTL of the NXRR with the TTL of the newly arrived RR.  If
+  subsequent RRs arrive, the minimum of any of their TTLs will be applied
+  to NXRRs.  Note that NXRRs cannot live longer than the minimum TTL of RRs
+  for the same name.
+
+Error Caching (by Dennis Ferguson):
+
+- Enabled when named is compiled with -DNET_ERRS and the "nserror" directive
+  is given in named.boot, with a positive number of error sockets indicated.
+
+- Network errors (e.g. ICMP unreachable, Connection Refused, etc.)
+  received in response to a query packet, and Query Response errors, are
+  both cached in the same way: the offending server/forwarder is treated
+  as if it has timed out a maximal number of times, to ensure that it
+  won't be used again, and the query is immediately retried using another
+  server, if necessary and possible, or responded to with a SERVFAIL
+  error otherwise.  The one exception is if you get a SERVFAIL response
+  error from one of your forwarders.  In this case the query is
+  immediately terminated regardless and a SERVFAIL returned.
+
+- Network errors are detected on the sendto() or write() when sending a
+  query (possible if your host has no default route) or received on
+  sockets which are connected to a destination.  The number of error sockets
+  to use are given by the "nserror" boot file directive.  Usually 3 are enough.
+  The sockets are allocated to queries as available.  If all error
+  sockets are allocated to queries which are current, additional queries
+  are sent the old way, without error detection.  When reconnecting a
+  socket, the socket which has seen the least traffic since the last
+  reconnect is preferred, this meaning that the socket(s) connected to
+  your forwarder(s) will usually remain connected.  This mechanism should
+  not be enabled on multihomed hosts where different source IP addresses
+  might make a difference in reachability from remote networks.
+
+Tools:
+
+- Originally intended for non-root users, the nsmaint program written by
+  Dennis Ferguson is a general nameserver maintenance interface tool.
+
+- Two new lookup programs, host (by Charles Hedrick) and dig (by Steve Hotz
+  et al), are included for completeness, as are some scripts from UIUC
+  (contributed by Paul Pomes), though I prefer using nsmaint for such things.
+
+
+Files that are new to BIND in this collection:
+
+doc/MailPath		- documentation for the T_MP RR
+named/ns_path.c		- pathalias database interface
+
+man/nsmaint.8		- nsmaint man page
+tools/nsmaint.c		- nsmaint source code
+
+man/host.1		- Rutgers Univ. host man page
+tools/host.c		- Rutgers Univ. host source code
+
+tools/hostinfo.sh	- nslookup interface used in preference to nsquery
+
+tools/dig/*		- ISI domain information groper
+
+utsetup/*		- guide for University of Toronto subsites
+
+
+Files that have changed:
+
+The res/ and named/ directories have had many changes applied.  It seems most
+of the xfer-related bugs we had fixed had already been dealt with in some way,
+but there were several generic bugs left.  The T_MP code is compiled in if
+T_MP is defined in <arpa/nameser.h>.  As far as I recall the only gratuitous
+change made was the pathname initialization array; I originally hoped to be
+able to set most paths from named.boot but it turns out it is only practical
+for the location of the xfer program (which was hardwired in previously!).
+
+Miscellaneous:
+
+include/netdb.h		- Added SunRPC definitions within #ifdef sun so it is
+			  directly copyable to /usr/include on Suns.
+include/pathnames.h	- Added _PATH_NAMED and _PATH_DATADIR for nsmaint.c.
+include/resolv.h	- MAXDNSRCH is 10, for > 1 domain lines in resolv.conf.
+			  MAXNS is 5, for paranoid multiply redundant setups.
+include/arpa/nameser.h	- Added T_MP and knowledge of m68k (sun3) and mips
+			  byteorder.
+named/Makefile		- Moved /usr/sbin and such to definitions at the top.
+tools/Makefile		- Knows about the nsmaint and host programs.
+tools/nstest.c		- Added T_MP and use INADDR_LOOPBACK if it exists, in
+			  preference to INADDR_ANY.
+
+
+Documentation changes needed (not done):
+
+- named.8 should probably describe the new 'xfer' command in named.boot.
+- resolver.5 should document effect of multiple 'domain' directives.
+
+
+Compilation hints:
+
+For all Makefiles use -I../include in CFLAGS if you aren't installing the
+files in the include directory.
+
+To compile on SunOS 4.0:
+	Define SUNOS4 in named/Makefile and use -g option.
+	This is the test & development OS on a medium-busy Sun4/280.
+
+To compile on SunOS 3.5:
+	Use -g option.  Tested with a fake root supercaching campus forwarder.
+
+To compile on RISC/OS 4.0:
+	Make sure /bsd43/bin is first in your path and in the PATH in
+	mkdep (which should be installed in your path somewhere).  Remove
+	backslashes from the awk script inside mkdep.  Untested.
+
+To compile on IRIX 3.1F:
+	Define SYSV in named/Makefile and use -I/usr/include/bsd in all
+	Makefiles.  Untested (named/ns_resp.c caused ugen compiler error).
+	A slight change was needed in ns_maint.c to avoid duplicate
+	definition of union wait.
+
+
+I think this remains to be done by somebody with authority (or by consensus):
+
+- We *urge* designation of a standard directory for nameserver data files.
+  Every machine running a nameserver will have them, and people put them all
+  over the place because they have no guidance.  At UofToronto we settled on
+  /etc/nsdata, and we compile named to look for /etc/nsdata/named.boot.
+  People use symlinks as appropriate to point /etc/nsdata at whereever they
+  want.  I put some relevant definitions in pathnames.h because they were
+  needed by the nsmaint program.
+
+- Make the resolver compile with debug code by default (e.g. change all
+  #ifdef DEBUG to #ifndef NODEBUG).  It is very useful to be able to
+  poke the debug flag in the resolver in a binary or at runtime by the
+  application.
+
+- The pathname configuration is inadequate.  There should be an /etc/named.conf
+  file which sets this stuff and is read immediately on startup.  Then there
+  will be no paths hardwired into any program and we don't have to depend on
+  the tastes of vendors to locate things in the "right" (for us) places.  The
+  syntax should be as in the output of printenv.  ZMailer has a routine to do
+  this, intended to find its way into the C library at some point...
+
+
+I'm appending named.stats dump from 3 machines I've been running this stuff
+on for a few months now.  In *our* environment, which isn't typical, the
+NXDOMAIN cache is usually effective (2 responses from cache for each entry),
+but the NXRR cache is only effective if there are entries in the mail queue
+(repeated MX and A lookups) and otherwise I see typically 1 response from
+cache for every 2 entries.  I think the cache hit behaviour is in both cases
+*very* sensitive to the mail queue and the state of one's Internet link.
+Of course the NXDOMAIN behaviour is very sensitive to the mailer configuration
+(how it does pattern matching and routing).  [ To summarize; everything is
+sensitive to everything... ]
+
+#1: neat.cs.toronto.edu
+    Sun4/280, SunOS 4.0.3, one of 3 major mail gateways on the campus LAN,
+    typically handles a couple of thousand messages a day.  Simple primary
+    server for a few domains, including the UofT organizational domain.
+    It forwards to bay.csri.toronto.edu.
+
+#2: ephemeral.ai.toronto.edu
+    Sun4/280, SunOS 4.0.1, one of 5 generic secondary servers for UofT, it
+    loads 140 internal zones and may be listed in random people's
+    resolv.conf files.
+
+#3: bay.csri.toronto.edu
+    Sun3/280, SunOS 3.5, one of 2 fake roots on campus (the only one known
+    as such though), which loads all the UofT zones, the toplevel Internet
+    zones, and acts as a secondary for some organizations on the regional net
+    (that's 152 zones).  People on campus are encouraged to forward queries
+    to it as the primary super-cache.
+
+
+The reason UofT has so many zones is that we have a dual identity,
+TORONTO.EDU and UTORONTO.CA are maintained in parallel.  Add to that the
+reverse address maps for the networks here and it all adds up.
+
+#1: neat.ai.toronto.edu
+###  Tue Oct  3 19:46:34 1989
+333727	time since boot (secs)
+333727	time since reset (secs)
+544178	input packets
+552715	output packets
+526959	queries
+4	iqueries
+2171	duplicate queries
+18106	responses
+1508	duplicate responses
+164850	OK answers
+358640	FAIL answers
+3	FORMERR answers
+245	system queries
+1	prime cache calls
+1	check_ns calls
+110	bad responses dropped
+114	martian responses
+1754	cached NXDOMAIN responses
+4006	answers from NXDOMAIN cache
+4788	cached negative RRs
+6541	answers from negative RRs
+844	updates to negative RR ttl
+8413	connections of error sockets
+20082	found error socket already connected
+0	found all error sockets in use
+0	disconnections of error sockets
+0	Unknown query types
+440905	A querys
+31498	CNAME querys
+879	SOA querys
+10167	PTR querys
+1	HINFO querys
+43078	MX querys
+13	UNAME querys
+301	MP querys
+9	AXFR querys
+108	ANY querys
+
+#2: ephemeral.ai.toronto.edu
+###  Sun Sep 24 18:48:58 1989
+262769	time since boot (secs)
+262769	time since reset (secs)
+57645	input packets
+58533	output packets
+53147	queries
+0	iqueries
+419	duplicate queries
+4512	responses
+223	duplicate responses
+18713	OK answers
+33885	FAIL answers
+0	FORMERR answers
+1277	system queries
+398	prime cache calls
+398	check_ns calls
+27	bad responses dropped
+3	martian responses
+253	cached NXDOMAIN responses
+676	answers from NXDOMAIN cache
+1075	cached negative RRs
+583	answers from negative RRs
+54	updates to negative RR ttl
+3046	connections of error sockets
+1604	found error socket already connected
+0	found all error sockets in use
+0	disconnections of error sockets
+0	Unknown query types
+40975	A querys
+3062	CNAME querys
+10	SOA querys
+7	WKS querys
+2279	PTR querys
+1	HINFO querys
+5303	MX querys
+3	UNAME querys
+21	MP querys
+1486	ANY querys
+
+#3: bay.csri.toronto.edu
+###  Sun Sep 24 18:46:25 1989
+1581589	time since boot (secs)
+1581589	time since reset (secs)
+1627047	input packets
+1718440	output packets
+1277104	queries
+5	iqueries
+27902	duplicate queries
+350495	responses
+52062	duplicate responses
+662523	OK answers
+519450	FAIL answers
+14	FORMERR answers
+1533	system queries
+5	prime cache calls
+5	check_ns calls
+116032	bad responses dropped
+46	martian responses
+16564	cached NXDOMAIN responses
+61025	answers from NXDOMAIN cache
+55070	cached negative RRs
+105882	answers from negative RRs
+5802	updates to negative RR ttl
+0	connections of error sockets
+0	found error socket already connected
+468629	found all error sockets in use
+0	disconnections of error sockets
+3	Unknown query types
+404323	A querys
+356	NS querys
+2	invalid(MF) querys
+283035	CNAME querys
+42	SOA querys
+1	MG querys
+4	MR querys
+5227	WKS querys
+101404	PTR querys
+43	HINFO querys
+383371	MX querys
+1	type 66 querys
+2583	UNAME querys
+6193	MP querys
+9	AXFR querys
+90502	ANY querys

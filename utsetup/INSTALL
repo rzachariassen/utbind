@@ -1,0 +1,83 @@
+To install BIND 4.8+ on a Sun 3.x (x > 2) system:
+
+rm -f /usr/include/{netdb.h,resolv.h} /usr/include/arpa/nameser.h
+cp include/netdb.h.4.2 /usr/include/netdb.h
+cp include/resolv.h /usr/include/resolv.h
+cp include/arpa/nameser.h /usr/include/arpa/nameser.h
+cp bin/mkdep /usr/ucb
+cd res
+make -f Makefile.resolv depend
+make -f Makefile.resolv
+make -f Makefile.resolv install
+make -f Makefile.resolv clean
+cd ../named
+make depend
+make RES=-lresolv
+make install
+make clean
+cp named.reload named.restart /etc
+cd ../tools
+make RES=-lresolv
+make install
+cp nsquery nstest /usr/local
+make clean
+
+To install on a 4.3bsd system using libresolv.a, replace the first cp with:
+
+cp include/netdb.h /usr/include/netdb.h
+
+To install the resolver library in libc.a (on a 4.3bsd system), do:
+
+cd /usr/src/lib/libc/net
+mkdir 4.3dist
+mv -f Makefile res_*.c 4.3dist
+cd named
+mkdir 4.3dist
+mv -f Makefile *.c 4.3dist
+ln -s ../../../../usr.lib/bind/res/named/* .
+make depend
+make
+cd ..
+ln -s ../../../usr.lib/bind/res/{Makefile,herrno.c,res_*.c} .
+make depend
+make
+cd /usr/src/usr.lib/libc
+make
+(twiddle thumbs)
+cp libc.a /lib/libc.a
+ranlib /lib/libc.a
+cp libc_p.a /usr/lib/libc_p.a
+ranlib /usr/lib/libc_p.a
+(the above may be replaced by a 'make install')
+
+
+If you wish to recompile programs affected by this change (new resolver
+routines), here is a partial list to start you off:
+
+/bin:		hostid login mail rcp
+
+/etc:		arp fingerd ftpd gettable htable ifconfig inetd
+		named ping rexecd rlogind route routed rshd rwhod
+		syslogd talkd telnetd timedc uucpd
+
+/usr/games:	hunt lib/hunt.driver
+
+/usr/lib:	lpd sendmail uucp/uucico
+
+/usr/ucb:	finger ftp lpr netstat quota rlogin rsh rwho systat talk
+		telnet tftp tn3270 whois
+
+/usr/local:	?
+
+
+To start the nameserver, run /etc/named.restart.  Watch syslog for complaints.
+Clean up your data and restart named until complaints stop appearing.  One
+widespread change is that all instances of ANY in your data files must be
+replaced with IN.
+
+You may wish to look through the setup directory if you aren't sure what this
+is all about.
+
+Have fun.
+
+rayan@ai.toronto.edu

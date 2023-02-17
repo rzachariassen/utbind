@@ -1,0 +1,5 @@
+; The implicit origin is either TORONTO.EDU or UTORONTO.CA
+                IN      NS      ugw.utcs
+                IN      NS      ephemeral.ai
+                IN      NS      bay.csri
+                IN      NS      suzuki.ccie

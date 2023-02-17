@@ -1,0 +1,4 @@
+#!/bin/sh
+PIDFILE=/etc/named.pid
+kill -KILL `cat ${PIDFILE}`
+nice --10 /etc/named

@@ -1,0 +1,115 @@
+.TH NSMAINT 8 local
+.DA 09 June 1989
+.SH NSMAINT
+nsmaint \- allow non\-root users to maintain the name server and data base
+.SH SYNOPSIS
+.B nsmaint
+[
+.B -d
+]
+sync|kill|start|stop|dump|clean|START|...
+.SH DESCRIPTION
+.I Nsmaint
+is a setuid program intended to allow non\-root users the ability
+to stop and start the
+.IR named (8)
+name server daemon and to edit files in its database.  The program
+assumes that all name server data base files are stored in a directory
+tree rooted in a single directory (conventionally
+.IR /etc/nsdata )
+and that users who are name server maintainers will be members of a
+group named
+.IR nsmaint .
+.PP
+The program is invoked with a single keyword, which indicates the
+operation to be performed, as an argument.  The following keywords
+are understood.
+.PP
+.B sync
+.PP
+Causes the running daemon to reread its data base (by sending a
+SIGHUP to the daemon).  This is useful for
+making the name server aware of changes which have been made to its
+data base files.
+.PP
+.B stop
+.PP
+Causes the running daemon to terminate by sending a SIGTERM signal to it.
+.PP
+.B kill
+.PP
+Currently a synonym for the
+.I stop
+keyword.
+.PP
+.B start
+.PP
+Causes a new instance of the daemon to be started.  This is equivalent
+to running the named program from a root account except that
+.I nsmaint
+will first try to determine if a named is running already and, if so,
+will politely decline to start a second copy.
+.PP
+.B START
+.PP
+Like
+.IR start ,
+except that the check for an already running daemon is not performed.  The
+check for an existing daemon can occasionally be mistaken.
+.I START
+is available to force the issue.
+.PP
+.B dump
+.PP
+Sends a SIGINT signal to the running daemon, which should provoke it into
+dumping its internal database into a disk file (conventionally
+.IR /usr/tmp/named_dump.db ).
+.PP
+.B clean
+.PP
+Does a recursive cleanup of file ownerships and permissions in the
+name server data base directory (conventionally
+.IR /etc/nsdata ).
+The ownership of all directories and singly linked regular files are
+changed to user
+.I root
+and group 
+.IR nsmaint ,
+with permissions being set to 664 for regular files and 775 for
+directories (in effect, all files are made group writable).
+.I Nsmaint
+will quietly decline to change the ownership or permissions of files
+and directories with the sticky bit set.  It will also noisily decline to
+change regular files with more than one link and any files which are
+neither directories nor regular files, including symbolic links.  Attempts
+to make
+.I nsmaint
+do something which it considers a possible attempt to breach security are
+reported via
+.IR syslog (3)
+at high priority.  Note that while the root of the database tree (i.e.
+.IR /etc/nsdata )
+may be a symbolic link, links of any kind are disallowed below this point.
+.PP
+.B debuginc
+.PP
+Causes the debug level of the running daemon to be incremented, by sending
+it a SIGUSR1 signal.
+.PP
+.B debugoff
+.PP
+Causes debugging to be turned off in the running daemon, by sending it a
+SIGUSR2 signal.
+.SH FILES
+.nf
+.ta \w'/usr/tmp/named_dump.db   'u
+/etc/named	name server daemon executable
+/etc/named.pid	the process id of the running daemon
+/etc/nsdata	root of the database tree
+.fi
+.SH "SEE ALSO"
+named(8)
+.SH BUGS
+.I Nsmaint
+is a setuid program of considerable power.  It is better if members of
+the nsmaint group are at least somewhat trusted users.

@@ -1,0 +1,4 @@
+
+#!/bin/sh
+PIDFILE=/etc/named.pid
+kill -HUP `cat ${PIDFILE}`

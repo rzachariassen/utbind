@@ -1,0 +1,2 @@
+#!/bin/csh -f
+kill -QUIT `cat /etc/named.pid`

@@ -1,0 +1,7 @@
+#!/bin/sh
+PIDFILE=/etc/named.pid
+kill -0 `cat ${PIDFILE}`
+if [ $? -ne 0 ]; then
+	nice --8 /etc/named
+	/usr/ucb/mail -s "named restarted on `hostname`" maint-net, paul
+fi

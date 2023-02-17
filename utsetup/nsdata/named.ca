@@ -1,0 +1,27 @@
+;
+;	@(#)root.cache	1.15	(Berkeley)	89/09/18
+;
+; Initial cache data for root domain servers.
+;
+
+.			99999999	IN	NS	nic.ddn.mil.
+			99999999	IN	NS	ns.nasa.gov.
+			99999999	IN	NS	terp.umd.edu.
+			99999999	IN	NS	a.isi.edu.
+			99999999	IN	NS	aos.brl.mil.
+			99999999	IN	NS	gunter-adam.af.mil.
+			99999999	IN	NS	c.nyser.net.
+
+;
+;  Prep the cache (hotwire the addresses).  Order does not matter
+;
+
+nic.ddn.mil.		99999999	IN	A	10.0.0.51
+nic.ddn.mil.		99999999	IN	A	26.0.0.73
+ns.nasa.gov.		99999999	IN	A	128.102.16.10
+a.isi.edu.		99999999	IN	A	26.3.0.103
+aos.brl.mil.		99999999	IN	A	128.20.1.2
+aos.brl.mil.		99999999	IN	A	192.5.25.82
+gunter-adam.af.mil.	99999999	IN	A	26.1.0.13
+c.nyser.net.		99999999	IN	A	192.33.4.12
+terp.umd.edu.		99999999	IN	A	128.8.10.90

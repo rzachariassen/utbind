@@ -1,0 +1,21 @@
+From uxc.cso.uiuc.edu!paul Tue Jun  6 01:14:16 1989
+Received: from uxc.cso.uiuc.edu by neat.ai.toronto.edu with SMTP id 11705; Tue, 6 Jun 89 01:14:13 EDT
+Received: by uxc.cso.uiuc.edu
+	(5.61+/IDA-1.2.8) id AA17441; Tue, 6 Jun 89 00:13:39 -0500
+Date:	Tue, 6 Jun 89 01:13:39 EDT
+From:	"Paul Pomes (I'm the NRA!)" <paul@uxc.cso.uiuc.edu>
+Message-Id: <8906060513.AA17441@uxc.cso.uiuc.edu>
+To:	rayan@ai.toronto.edu
+Subject: named
+Status: R
+
+...
+
+Included is a shar file of collected shell scripts for controlling named.
+We keep these as bind/tools/scripts and add an extra line to the install
+Makefile target
+
+	cd scripts; cp * $(DESTDIR)/bin
+
+The named/named.{restart,reload} are then deleted.
+
